@@ -12,7 +12,7 @@ from .scanner import scan_directory
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="privacy-scan",
-        description="Scan a folder locally for possible email addresses.",
+        description="Scan a folder locally for possible personal data and credentials.",
     )
     parser.add_argument("directory", type=Path, help="folder to scan")
     args = parser.parse_args()
