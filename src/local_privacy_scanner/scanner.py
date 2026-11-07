@@ -1,4 +1,4 @@
-"""Scan UTF-8 text files for likely email addresses without exposing matches."""
+"""Scan UTF-8 text files for likely sensitive values without exposing matches."""
 
 from __future__ import annotations
 
@@ -8,7 +8,23 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
 
-_EMAIL = re.compile(r"(?<![\w.+-])[\w.+-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+")
+_DETECTORS = (
+    (
+        "possible email address",
+        re.compile(
+            r"(?<![\w.+-])[\w.+-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+"
+        ),
+    ),
+    ("possible GitHub token", re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})\b")),
+    ("possible AWS access key ID", re.compile(r"\b(?:AKIA|ASIA)[A-Z0-9]{16}\b")),
+    (
+        "possible credential assignment",
+        re.compile(
+            r"\b(?:api[_-]?key|access[_-]?token|secret|password)\s*[:=]\s*['\"]?[A-Za-z0-9/+_=-]{12,}['\"]?",
+            re.IGNORECASE,
+        ),
+    ),
+)
 _DEFAULT_MAX_BYTES = 1_000_000
 
 
@@ -39,7 +55,7 @@ def _text_files(root: Path, max_bytes: int) -> Iterator[Path]:
 
 
 def scan_directory(directory: str | Path, *, max_bytes: int = _DEFAULT_MAX_BYTES) -> list[Finding]:
-    """Return possible email locations under *directory*.
+    """Return locations of possible sensitive data under *directory*.
 
     Binary files, symlinks, and files larger than ``max_bytes`` are skipped.
     File contents and matched values are never included in findings.
@@ -62,6 +78,7 @@ def scan_directory(directory: str | Path, *, max_bytes: int = _DEFAULT_MAX_BYTES
             continue
 
         for line_number, line in enumerate(text.splitlines(), start=1):
-            if _EMAIL.search(line):
-                findings.append(Finding(path=path.relative_to(root), line=line_number))
+            for kind, pattern in _DETECTORS:
+                if pattern.search(line):
+                    findings.append(Finding(path=path.relative_to(root), line=line_number, kind=kind))
     return findings
