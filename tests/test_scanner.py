@@ -31,6 +31,30 @@ class ScanDirectoryTests(unittest.TestCase):
 
         self.assertEqual(findings, [])
 
+    def test_detects_common_credential_patterns_without_storing_values(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            github_token = "ghp_" + "A" * 36
+            aws_key_id = "AKIA" + "A" * 16
+            credential_value = "not-a-real-secret-value"
+            (root / "config.txt").write_text(
+                f"github={github_token}\naws={aws_key_id}\napi_key={credential_value}\n",
+                encoding="utf-8",
+            )
+
+            findings = scan_directory(root)
+
+        self.assertEqual(
+            [finding.kind for finding in findings],
+            ["possible GitHub token", "possible AWS access key ID", "possible credential assignment"],
+        )
+        self.assertTrue(all(finding.path == Path("config.txt") for finding in findings))
+        self.assertTrue(all(finding.line == index for index, finding in enumerate(findings, start=1)))
+        report = repr(findings)
+        self.assertNotIn(github_token, report)
+        self.assertNotIn(aws_key_id, report)
+        self.assertNotIn(credential_value, report)
+
     def test_rejects_non_directory(self):
         with tempfile.TemporaryDirectory() as temporary:
             file_path = Path(temporary) / "file.txt"
