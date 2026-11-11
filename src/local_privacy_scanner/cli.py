@@ -15,10 +15,17 @@ def main() -> int:
         description="Scan a folder locally for possible personal data and credentials.",
     )
     parser.add_argument("directory", type=Path, help="folder to scan")
+    parser.add_argument(
+        "--exclude",
+        action="append",
+        default=[],
+        metavar="GLOB",
+        help="skip matching relative paths (repeatable, e.g. --exclude 'build/**')",
+    )
     args = parser.parse_args()
 
     try:
-        findings = scan_directory(args.directory)
+        findings = scan_directory(args.directory, exclude=args.exclude)
     except (NotADirectoryError, ValueError) as error:
         print(f"privacy-scan: {error}", file=sys.stderr)
         return 2
