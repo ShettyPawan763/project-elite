@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-privacy-scanner"
+version = "0.1.0"
+description = "A small local-only scanner for likely sensitive data in text files."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Project Elite contributors" }]
+
+[project.scripts]
+privacy-scan = "local_privacy_scanner.cli:main"
+privacy-scan-gui = "local_privacy_scanner.gui:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
