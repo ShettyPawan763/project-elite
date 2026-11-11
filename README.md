@@ -14,7 +14,13 @@ python -m pip install -e .
 privacy-scan ./folder-to-check
 ```
 
-The report contains a relative file path, line number, and finding type. It never prints the matched value or a line of file contents. The scanner skips symlinks, binary files, unreadable or non-UTF-8 files, and files larger than 1 MB.
+Skip paths with repeatable relative glob patterns:
+
+```sh
+privacy-scan ./folder-to-check --exclude 'build/**' --exclude '*.log'
+```
+
+The report contains a relative file path, line number, and finding type. It never prints the matched value or a line of file contents. The scanner skips excluded paths, symlinks, binary files, unreadable or non-UTF-8 files, and files larger than 1 MB.
 
 The scan runs locally and does not make network requests. Pattern matching is heuristic: it can miss sensitive values and may flag harmless text. The scanner does not validate credentials with their providers. A clean scan is not proof that a folder contains no sensitive information.
 
