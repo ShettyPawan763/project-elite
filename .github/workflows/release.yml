@@ -1,0 +1,57 @@
+name: Build desktop downloads
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: windows
+          - os: macos-latest
+            artifact: macos
+          - os: ubuntu-latest
+            artifact: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pyinstaller .
+      - run: pyinstaller --clean --noconfirm --windowed --name "Local Privacy Scanner" gui_main.py
+      - if: runner.os == 'Windows'
+        run: Compress-Archive -Path "dist/Local Privacy Scanner" -DestinationPath "Local-Privacy-Scanner-${{ matrix.artifact }}.zip"
+        shell: pwsh
+      - if: runner.os == 'macOS'
+        run: zip -r "Local-Privacy-Scanner-${{ matrix.artifact }}.zip" "dist/Local Privacy Scanner.app"
+      - if: runner.os == 'Linux'
+        run: zip -r "Local-Privacy-Scanner-${{ matrix.artifact }}.zip" "dist/Local Privacy Scanner"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Local-Privacy-Scanner-${{ matrix.artifact }}
+          path: Local-Privacy-Scanner-${{ matrix.artifact }}.zip
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          pattern: Local-Privacy-Scanner-*
+          merge-multiple: true
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" release-assets/*.zip --title "Local Privacy Scanner ${GITHUB_REF_NAME}" --generate-notes
+
