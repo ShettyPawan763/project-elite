@@ -1,6 +1,15 @@
-# Project Elite: Local Privacy Scanner
+# Project Elite
 
-Project Elite is a portfolio of projects made and updated weekly or yearly. Its first project is a small command-line tool that scans files on your machine for likely sensitive data. The scanner checks small UTF-8 text files for possible email addresses, recognizable GitHub tokens, AWS access key IDs, and credential assignments.
+A portfolio of projects made and updated weekly or yearly.
+
+## Projects
+
+- **Local Privacy Scanner:** scans small local text files for likely personal data and credential patterns. See the scanner usage below.
+- **Personalized AI Agent:** a local-profile, session-based chat assistant. See [personalized_ai_agent/README.md](personalized_ai_agent/README.md) for setup, provider configuration, and privacy details.
+
+## Local Privacy Scanner
+
+The scanner checks small UTF-8 text files for possible email addresses, recognizable GitHub tokens, AWS access key IDs, and credential assignments.
 
 ## Install
 
