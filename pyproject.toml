@@ -13,6 +13,9 @@ authors = [{ name = "Project Elite contributors" }]
 
 [project.scripts]
 privacy-scan = "local_privacy_scanner.cli:main"
+privacy-scan-gui = "local_privacy_scanner.gui:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+
