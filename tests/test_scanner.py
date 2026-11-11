@@ -55,6 +55,24 @@ class ScanDirectoryTests(unittest.TestCase):
         self.assertNotIn(aws_key_id, report)
         self.assertNotIn(credential_value, report)
 
+    def test_excludes_matching_files_and_directories(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "keep.txt").write_text("person@example.test", encoding="utf-8")
+            generated = root / "generated"
+            generated.mkdir()
+            (generated / "output.txt").write_text("hidden@example.test", encoding="utf-8")
+            (root / "debug.log").write_text("also-hidden@example.test", encoding="utf-8")
+
+            findings = scan_directory(root, exclude=("generated/**", "*.log"))
+
+        self.assertEqual([finding.path for finding in findings], [Path("keep.txt")])
+
+    def test_rejects_parent_traversal_exclusion(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaises(ValueError):
+                scan_directory(temporary, exclude=("../outside/**",))
+
     def test_rejects_non_directory(self):
         with tempfile.TemporaryDirectory() as temporary:
             file_path = Path(temporary) / "file.txt"
