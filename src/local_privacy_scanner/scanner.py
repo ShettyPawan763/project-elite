@@ -5,8 +5,8 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Iterator
+from pathlib import Path, PurePosixPath, PureWindowsPath
+from typing import Iterable, Iterator
 
 _DETECTORS = (
     (
@@ -37,15 +37,44 @@ class Finding:
     kind: str = "possible email address"
 
 
-def _text_files(root: Path, max_bytes: int) -> Iterator[Path]:
+def _matches_exclusion(relative_path: str, patterns: tuple[str, ...]) -> bool:
+    path = PurePosixPath(relative_path)
+    return any(path.match(pattern) for pattern in patterns)
+
+
+def _normalize_exclusions(patterns: Iterable[str]) -> tuple[str, ...]:
+    normalized = []
+    for pattern in patterns:
+        normalized_pattern = pattern.replace("\\", "/")
+        if (
+            not normalized_pattern
+            or PurePosixPath(normalized_pattern).is_absolute()
+            or PureWindowsPath(pattern).is_absolute()
+            or ".." in PurePosixPath(normalized_pattern).parts
+        ):
+            raise ValueError("exclude patterns must be non-empty relative paths without '..'")
+        normalized.append(normalized_pattern)
+    return tuple(normalized)
+
+
+def _text_files(root: Path, max_bytes: int, exclusions: tuple[str, ...]) -> Iterator[Path]:
     """Yield regular, non-symlink files small enough to inspect."""
     for directory, dirnames, filenames in os.walk(root, followlinks=False):
         current = Path(directory)
-        dirnames[:] = [name for name in dirnames if not (current / name).is_symlink()]
+        dirnames[:] = [
+            name
+            for name in dirnames
+            if not (current / name).is_symlink()
+            and not _matches_exclusion(
+                (current / name).relative_to(root).as_posix(), exclusions
+            )
+        ]
         for filename in filenames:
             candidate = current / filename
             try:
                 if candidate.is_symlink() or not candidate.is_file():
+                    continue
+                if _matches_exclusion(candidate.relative_to(root).as_posix(), exclusions):
                     continue
                 if candidate.stat().st_size > max_bytes:
                     continue
@@ -54,10 +83,16 @@ def _text_files(root: Path, max_bytes: int) -> Iterator[Path]:
             yield candidate
 
 
-def scan_directory(directory: str | Path, *, max_bytes: int = _DEFAULT_MAX_BYTES) -> list[Finding]:
+def scan_directory(
+    directory: str | Path,
+    *,
+    max_bytes: int = _DEFAULT_MAX_BYTES,
+    exclude: Iterable[str] = (),
+) -> list[Finding]:
     """Return locations of possible sensitive data under *directory*.
 
-    Binary files, symlinks, and files larger than ``max_bytes`` are skipped.
+    Binary files, symlinks, excluded paths, and files larger than ``max_bytes`` are skipped.
+    Exclusion patterns use relative, slash-separated glob paths.
     File contents and matched values are never included in findings.
     """
     root = Path(directory).expanduser().resolve()
@@ -65,9 +100,10 @@ def scan_directory(directory: str | Path, *, max_bytes: int = _DEFAULT_MAX_BYTES
         raise NotADirectoryError(f"not a directory: {root}")
     if max_bytes < 1:
         raise ValueError("max_bytes must be positive")
+    exclusions = _normalize_exclusions(exclude)
 
     findings: list[Finding] = []
-    for path in _text_files(root, max_bytes):
+    for path in _text_files(root, max_bytes, exclusions):
         try:
             with path.open("rb") as source:
                 data = source.read(max_bytes + 1)
