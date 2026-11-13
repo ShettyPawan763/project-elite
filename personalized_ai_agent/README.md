@@ -1,6 +1,6 @@
 # Personalized AI Agent
 
-A small, local-first command-line assistant that adapts its answers to a profile you control.
+A small, local-first command-line assistant that adapts its answers to a profile you control and can manage a local task list with your approval.
 
 ## Requirements
 
@@ -24,7 +24,9 @@ personal-agent init
 
 The setup asks for your name, role or background, goals, and response preferences. It saves these fields as readable JSON at `~/.personalized-ai-agent/profile.json` (or the path in `AI_AGENT_PROFILE`). You can edit or delete that file at any time.
 
-## Chat
+## Chat and task actions
+
+Set the API key, then start a chat:
 
 ```sh
 # macOS/Linux
@@ -36,13 +38,15 @@ $env:OPENAI_API_KEY = "your-key"
 personal-agent chat
 ```
 
-Type `/reset` to clear the current conversation or `/quit` to exit. Conversation history exists only for the current process and is not written to disk.
+The assistant can list your saved tasks, add a task with an optional due date, and mark a task complete. It asks before adding or completing tasks; listing tasks is read-only. Try requests such as "What tasks do I have?" or "Add prepare the project demo for Friday." Use `/reset` to clear the current conversation or `/quit` to exit.
 
-## Privacy
+Tasks are stored locally as JSON at `~/.personalized-ai-agent/tasks.json` (or the path in `AI_AGENT_TASKS`). The model must return a task ID from the list before a task can be marked complete.
 
-The profile and conversation are included in requests to the configured chat completions API so the model can personalize its answers. They are sent over HTTPS when using the default OpenAI endpoint. The profile is stored locally as plain text; protect the file like other personal notes. This tool does not collect telemetry, and it does not claim that profile data is encrypted at rest. Review your provider's data handling terms before use.
+## Privacy and action limits
 
-The agent only replies in chat. It cannot run shell commands, browse the web, or take actions on your behalf.
+The profile and conversation are sent to the configured chat completions API so the model can personalize its answers and select task tools. Task data remains in a local JSON file and is included in a provider request only when needed for a task action. The profile and task files are plain text; protect them like other personal notes. This tool does not collect telemetry. Review your provider's data handling terms before use.
+
+The assistant can only use the built-in task actions. It cannot send email, access a calendar, browse the web, or run shell commands. Mutating task actions require an explicit confirmation in the terminal. Declined actions are not run.
 
 ## Configuration
 
@@ -50,3 +54,4 @@ The agent only replies in chat. It cannot run shell commands, browse the web, or
 - `AI_BASE_URL`: API root, defaults to `https://api.openai.com/v1`
 - `AI_MODEL`: model name, defaults to `gpt-4o-mini`
 - `AI_AGENT_PROFILE`: optional profile JSON path
+- `AI_AGENT_TASKS`: optional local task-list JSON path
