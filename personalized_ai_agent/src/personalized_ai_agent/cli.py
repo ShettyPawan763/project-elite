@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from personalized_ai_agent.agent.runtime import run_turn
-from personalized_ai_agent.behavior.policy import system_message
+from personalized_ai_agent.behaviour.policy import system_message
 
 DEFAULT_PROFILE = Path.home() / ".personalized-ai-agent" / "profile.json"
 
