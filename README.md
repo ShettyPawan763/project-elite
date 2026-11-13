@@ -4,6 +4,6 @@ Projects made and updated weekly or yearly.
 
 ## Personalized AI Agent
 
-A local-profile, session-based assistant that can now list, add, and complete local tasks with confirmation for changes.
+A layered local-profile assistant with a task-action skill. The code separates agent orchestration, behavior policy, skills, task storage, and AI-provider connectors.
 
-See [personalized_ai_agent/README.md](personalized_ai_agent/README.md) for setup, configuration, privacy details, and action limits.
+See [personalized_ai_agent/README.md](personalized_ai_agent/README.md) for setup, the architecture, and privacy details.
