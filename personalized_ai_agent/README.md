@@ -7,7 +7,7 @@ A small, local-first command-line assistant that adapts its answers to a profile
 The assistant is organized as a stack of small layers:
 
 - `agent/`: orchestrates model turns and bounds the tool-action loop.
-- `behavior/`: defines the assistant's rules and asks before actions that change data.
+- `behaviour/`: defines the assistant's rules and asks before actions that change data.
 - `skills/`: exposes the allowlisted capabilities the model can request.
 - `tasks/`: validates and stores the local task list.
 - `connectors/`: communicates with the configured AI provider.
