@@ -2,6 +2,19 @@
 
 A small, local-first command-line assistant that adapts its answers to a profile you control and can manage a local task list with your approval.
 
+## Architecture
+
+The assistant is organized as a stack of small layers:
+
+- `agent/`: orchestrates model turns and bounds the tool-action loop.
+- `behavior/`: defines the assistant's rules and asks before actions that change data.
+- `skills/`: exposes the allowlisted capabilities the model can request.
+- `tasks/`: validates and stores the local task list.
+- `connectors/`: communicates with the configured AI provider.
+- `cli.py`: handles profile setup and the terminal conversation.
+
+Each layer has a narrow job. New skills and service connectors can be added without putting their implementation into the CLI.
+
 ## Requirements
 
 - Python 3.10+
