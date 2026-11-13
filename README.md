@@ -4,6 +4,6 @@ Projects made and updated weekly or yearly.
 
 ## Personalized AI Agent
 
-A local-profile, session-based chat assistant that tailors responses to your goals and preferences. The profile is saved locally, while profile context and chat messages are sent to the configured AI provider.
+A local-profile, session-based assistant that can now list, add, and complete local tasks with confirmation for changes.
 
-See [personalized_ai_agent/README.md](personalized_ai_agent/README.md) for installation, configuration, and privacy details.
+See [personalized_ai_agent/README.md](personalized_ai_agent/README.md) for setup, configuration, privacy details, and action limits.
