@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Callable
 
-from personalized_ai_agent.behavior.policy import confirm_action
+from personalized_ai_agent.behaviour.policy import confirm_action
 from personalized_ai_agent.connectors.openai_compatible import complete
 from personalized_ai_agent.skills import task_management
 
